@@ -7,6 +7,18 @@ import { jevDecide, jevNoul } from "../decision/client.js";
 
 async function stdin():Promise<string>{return await new Promise(resolve=>{let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>resolve(s));});}
 const raw=await stdin(); let payload:any={}; try{payload=JSON.parse(raw||"{}")}catch{}
+
+if (process.env.WORKPLANE_ENABLED === "false") {
+  if (payload.hook_event_name) {
+    process.stdout.write(JSON.stringify({hookSpecificOutput: {}}));
+  } else if (payload.toolCall) {
+    process.stdout.write(JSON.stringify({decision: "allow"}));
+  } else {
+    process.stdout.write("{}");
+  }
+  process.exit(0);
+}
+
 const event=process.env.WORKPLANE_HOOK_EVENT || payload.hook_event_name || payload.event || "unknown";
 const tool=payload.tool_name || payload.toolCall?.name || payload.tool?.name || "";
 const input=payload.tool_input || payload.toolCall?.args || payload.tool?.input || {};
