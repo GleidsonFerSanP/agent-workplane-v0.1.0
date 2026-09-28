@@ -1,0 +1,10 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { routeTask } from "../src/routing/router.js";
+import { DEFAULT_CONFIG } from "../src/core/config.js";
+import { TaskClassification, TaskEnvelope, WorkspaceSignals } from "../src/core/types.js";
+const task:TaskEnvelope={id:"t",objective:"implement feature",source:{type:"prompt"},workspace:"/tmp/no-history",constraints:[],acceptanceCriteria:[],hints:[],createdAt:new Date().toISOString()};
+const ws:WorkspaceSignals={git:true,languages:["kotlin"],packageManagers:["gradle"],fileCount:100,candidateFiles:[],hasTests:true,dirty:false};
+const base:TaskClassification={kind:"feature",complexity:"medium",architectureImpact:.1,securityRelevance:.1,visualReasoning:.1,repoExploration:.4,testingNeed:.9,parallelizable:.3,confidence:.8,source:"heuristic"};
+test("quality-first router returns independent reviewer",()=>{const r=routeTask(task,base,ws,structuredClone(DEFAULT_CONFIG));assert.notEqual(r.primary,r.reviewer);assert.ok(r.scores[0]!.quality>=DEFAULT_CONFIG.qualityFloor);});
+test("architecture signal benefits claude without hard-coded forcing",()=>{const r=routeTask(task,{...base,architectureImpact:.95,kind:"refactor"},ws,structuredClone(DEFAULT_CONFIG));const claude=r.scores.find(x=>x.executor==="claude")!;const codex=r.scores.find(x=>x.executor==="codex")!;assert.ok(claude.quality>codex.quality);});

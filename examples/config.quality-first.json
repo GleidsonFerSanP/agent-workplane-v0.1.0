@@ -1,0 +1,5 @@
+{
+  "qualityFloor": 0.92,
+  "routing": { "minConfidence": 0.65, "historyWeight": 0.35, "exploreRate": 0.03 },
+  "review": { "enabled": true, "independent": true, "maxRework": 1, "minScore": 88 }
+}

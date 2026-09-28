@@ -1,0 +1,23 @@
+{
+  "name": "agent-workplane",
+  "version": "0.1.0",
+  "description": "Quality-first control plane for routing work across Codex, Claude Code and Google Antigravity with optional Jev decisions.",
+  "type": "module",
+  "bin": {
+    "work": "dist/src/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.3"
+  }
+}
