@@ -25,7 +25,7 @@ function withMode(id:ExecutorId, before:string[], after:string[], mode:Execution
 export function makeExecutor(id:ExecutorId){
   return {
     id,
-    available(){ return commandExists(id==="antigravity"?"agy":id); },
+    available(cfg?:WorkplaneConfig){ return commandExists(cfg?.executors[id]?.command ?? (id==="antigravity"?"agy":id)); },
     async run(task:TaskEnvelope,prompt:string,cfg:WorkplaneConfig,mode:ExecutionMode="implement"):Promise<ExecutionResult>{
       const ecfg=cfg.executors[id]; const started=new Date(); const m=withMode(id,ecfg.argsBeforePrompt,ecfg.argsAfterPrompt,mode,cfg);
       const args=[...m.before,prompt,...m.after];

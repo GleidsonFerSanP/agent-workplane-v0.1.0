@@ -117,10 +117,14 @@ export interface WorkplaneConfig {
     timeoutMs: number;
     failOpen: boolean;
   };
+  hooks: {
+    mode: "observe" | "advise";
+    largeFileBytes: number;
+    jevAssist: boolean;
+  };
   routing: {
     minConfidence: number;
     historyWeight: number;
-    exploreRate: number;
     preferred?: ExecutorId;
     advisor: {
       enabled: boolean;

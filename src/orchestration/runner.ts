@@ -5,7 +5,7 @@ import { inspectWorkspace } from "../core/workspace.js";
 import { classifyTask } from "../decision/jev.js";
 import { routeTask } from "../routing/router.js";
 import { consultRoutingAdvisor } from "../routing/advisor.js";
-import { appendRun } from "../routing/history.js";
+import { appendRun, readRuns } from "../routing/history.js";
 import { codexExecutor } from "../executors/codex.js";
 import { claudeExecutor } from "../executors/claude.js";
 import { antigravityExecutor } from "../executors/antigravity.js";
@@ -13,11 +13,13 @@ import { Executor } from "../executors/base.js";
 import { implementationPrompt, repairPrompt } from "./prompts.js";
 import { independentReview } from "./review.js";
 import { RunRecord, ExecutorId, WorkplaneConfig } from "../core/types.js";
+import { acquireTaskLock } from "../core/task-lock.js";
+import { clearActive, writeActive } from "../core/active.js";
 
 const executors:Record<ExecutorId,Executor>={codex:codexExecutor,claude:claudeExecutor,antigravity:antigravityExecutor};
 function availableConfig(cfg:WorkplaneConfig):WorkplaneConfig{
   const copy=structuredClone(cfg);
-  for(const id of Object.keys(copy.executors) as ExecutorId[]) if(copy.executors[id].enabled&&!executors[id].available()) copy.executors[id].enabled=false;
+  for(const id of Object.keys(copy.executors) as ExecutorId[]) if(copy.executors[id].enabled&&!executors[id].available(copy)) copy.executors[id].enabled=false;
   return copy;
 }
 export async function plan(input:string,workspace:string,opts:any={}){
@@ -31,25 +33,38 @@ export async function plan(input:string,workspace:string,opts:any={}){
  return {cfg,task,ws,classification,route};
 }
 export async function start(input:string,workspace:string,opts:any={}){
- const p=await plan(input,workspace,opts); const {cfg,task,ws,classification,route}=p; const primary=executors[route.primary];
- const run:RunRecord={runId:`run-${crypto.randomUUID().slice(0,8)}`,task,classification,route,status:"running",reworkCount:0,startedAt:new Date().toISOString()};
- run.execution=await primary.run(task,implementationPrompt(task,classification,ws,route),cfg,"implement");
- if(!run.execution.success){run.status="failed";run.failureReason=`primary executor failed: ${run.execution.stderr||run.execution.response}`;run.finishedAt=new Date().toISOString();appendRun(workspace,run);return run;}
- if(cfg.review.enabled){
-   run.status="reviewing"; const reviewer=executors[route.reviewer];
-   if(!reviewer.available() || (cfg.review.independent&&route.reviewer===route.primary)){
-     run.failureReason="independent reviewer unavailable";
-     if(cfg.review.failClosed){run.status="failed";run.finishedAt=new Date().toISOString();appendRun(workspace,run);return run;}
-   } else {
-     run.review=await independentReview(task,route.primary,reviewer,cfg);
-     if(!run.review.pass && cfg.review.maxRework>0){
-       run.reworkCount=1; const repair=await primary.run(task,repairPrompt(task,run.review.findings),cfg,"implement"); run.execution=repair;
-       if(repair.success) run.review=await independentReview(task,route.primary,reviewer,cfg); else run.failureReason="repair executor failed";
+ const p=await plan(input,workspace,opts); const {cfg,task,ws,classification,route}=p;
+ if(!opts.newRun){
+   const previous=readRuns(workspace).filter(r=>r.task.id===task.id).at(-1);
+   if(previous?.status==="done") return previous;
+ }
+ const release=acquireTaskLock(workspace,task.id);
+ const runId=`run-${crypto.randomUUID().slice(0,8)}`;
+ try {
+   const primary=executors[route.primary];
+   const run:RunRecord={runId,task,classification,route,status:"running",reworkCount:0,startedAt:new Date().toISOString()};
+   writeActive(workspace,{runId,task,classification,route,startedAt:run.startedAt});
+   run.execution=await primary.run(task,implementationPrompt(task,classification,ws,route),cfg,"implement");
+   if(!run.execution.success){run.status="failed";run.failureReason=`primary executor failed: ${run.execution.stderr||run.execution.response}`;run.finishedAt=new Date().toISOString();appendRun(workspace,run);return run;}
+   if(cfg.review.enabled){
+     run.status="reviewing"; const reviewer=executors[route.reviewer];
+     if(!reviewer.available(cfg) || (cfg.review.independent&&route.reviewer===route.primary)){
+       run.failureReason="independent reviewer unavailable";
+       if(cfg.review.failClosed){run.status="failed";run.finishedAt=new Date().toISOString();appendRun(workspace,run);return run;}
+     } else {
+       run.review=await independentReview(task,route.primary,reviewer,cfg);
+       if(!run.review.pass && cfg.review.maxRework>0){
+         run.reworkCount=1; const repair=await primary.run(task,repairPrompt(task,run.review.findings),cfg,"implement"); run.execution=repair;
+         if(repair.success) run.review=await independentReview(task,route.primary,reviewer,cfg); else run.failureReason="repair executor failed";
+       }
      }
    }
+   const reviewSatisfied=!cfg.review.enabled || (run.review?.pass===true) || (!cfg.review.failClosed&&!run.review);
+   run.status=run.execution.success && reviewSatisfied?"done":"failed";
+   if(run.status==="failed"&&!run.failureReason&&run.review&&!run.review.pass) run.failureReason=`review failed with score ${run.review.score}`;
+   run.finishedAt=new Date().toISOString(); appendRun(workspace,run); return run;
+ } finally {
+   clearActive(workspace,runId);
+   release();
  }
- const reviewSatisfied=!cfg.review.enabled || (run.review?.pass===true) || (!cfg.review.failClosed&&!run.review);
- run.status=run.execution.success && reviewSatisfied?"done":"failed";
- if(run.status==="failed"&&!run.failureReason&&run.review&&!run.review.pass) run.failureReason=`review failed with score ${run.review.score}`;
- run.finishedAt=new Date().toISOString(); appendRun(workspace,run); return run;
 }

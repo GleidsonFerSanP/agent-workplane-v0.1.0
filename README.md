@@ -48,6 +48,7 @@ Task intake
 - **Bounded automation.** Rework is limited; loops do not consume quota indefinitely.
 - **Local evidence beats internet folklore.** Routing history is gradually weighted into decisions.
 - **Minimal user ceremony.** The normal entrypoint is `work start <intent-or-issue>`.
+- **Idempotent starts.** Prompt tasks receive a stable workspace-scoped ID, completed tasks are reused, and an atomic lock prevents duplicate concurrent execution. `--new-run` is the explicit escape hatch.
 
 ## Requirements
 
@@ -83,6 +84,7 @@ Useful optional inputs:
 ```bash
 work start "task" --constraint "do not change backend contract"
 work start "task" --hint "existing navigation pattern is in app/navigation"
+work start "task" --new-run   # intentionally rerun a completed task
 ```
 
 These are hints/constraints, not a requirement to describe the execution plan.
@@ -106,7 +108,7 @@ The router does **not** simply pick the cheapest model. Every executor gets four
 - precision
 - quota efficiency
 
-Quality has the dominant weight and a configured floor. After enough local runs, the router blends generic priors with outcomes from similar tasks (`kind:complexity`). Review pass rate and rework matter more than raw token savings.
+Quality has the dominant weight and a configured floor. Cold-start priors are deliberately neutral across products; small task-specific signals only break ties. After enough local runs, the router blends those neutral priors with outcomes from similar tasks (`kind:complexity`). Review pass rate and rework matter more than raw token savings.
 
 An optional **routing advisor model** can be enabled for uncertain routes. It runs through one of the locally authenticated coding CLIs, not an API key. It is disabled by default until your local evals show that its extra quota improves routing quality. Configure `routing.advisor` in `.workplane/config.json`.
 
@@ -122,7 +124,7 @@ Adjust commands in `.workplane/config.json` if your local policies differ.
 
 ## Hooks
 
-`work install-hooks` generates conservative integration fragments under `.workplane/integrations/` for Claude Code, Codex and Antigravity. Initial hooks **observe and annotate** expensive reads/build outputs rather than aggressively blocking them. This is intentional: the first version optimizes quality and instrumentation before quota.
+`work install-hooks` generates conservative integration fragments under `.workplane/integrations/` for Claude Code, Codex and Antigravity. Initial hooks **observe and annotate** expensive reads/build outputs rather than aggressively blocking them. While a `work start` run is active, hooks can also see the task/classification/route. Set `hooks.mode` to `advise` and `hooks.jevAssist` to `true` to let Jev cheaply flag low-value large reads, build/test output, or subagent delegation; the advice never hard-blocks an action. This is intentional: quality and recoverability come before quota.
 
 Hook events are logged to `.workplane/hooks.jsonl`, providing the dataset needed to later add safe context/output gates.
 
@@ -135,6 +137,7 @@ All runtime state lives in `.workplane/` and is ignored by Git:
   config.json
   history.jsonl
   hooks.jsonl
+  active.json        # only while a run is active
   integrations/
 ```
 

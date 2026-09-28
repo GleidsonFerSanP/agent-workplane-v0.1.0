@@ -3,7 +3,10 @@ import path from "node:path";
 import { TaskEnvelope } from "./types.js";
 import { commandExists, runProcess } from "../utils/process.js";
 
-function id(prefix = "task"): string { return `${prefix}-${new Date().toISOString().slice(0,10).replaceAll("-","")}-${crypto.randomUUID().slice(0,8)}`; }
+function stablePromptId(workspace:string, objective:string):string {
+  const normalized=objective.trim().replace(/\s+/g," ").toLowerCase();
+  return `TASK-${crypto.createHash("sha256").update(`${workspace}\0${normalized}`).digest("hex").slice(0,12)}`;
+}
 
 export async function intake(input: string, workspace = process.cwd(), opts: { hint?: string[]; constraint?: string[] } = {}): Promise<TaskEnvelope> {
   const abs = path.resolve(workspace);
@@ -27,7 +30,7 @@ export async function intake(input: string, workspace = process.cwd(), opts: { h
     }
   }
   return {
-    id: id(), objective: input, source: { type: "prompt" }, workspace: abs,
+    id: stablePromptId(abs,input), objective: input, source: { type: "prompt" }, workspace: abs,
     constraints: [...(opts.constraint ?? [])], acceptanceCriteria: [], hints: [...(opts.hint ?? [])], createdAt: new Date().toISOString()
   };
 }

@@ -4,7 +4,7 @@ import { ExecutorId, RouteDecision, TaskClassification, TaskEnvelope, WorkplaneC
 export async function consultRoutingAdvisor(task:TaskEnvelope,c:TaskClassification,ws:WorkspaceSignals,route:RouteDecision,advisor:Executor,cfg:WorkplaneConfig):Promise<RouteDecision>{
   if(!cfg.routing.advisor.enabled) return route;
   if(cfg.routing.advisor.onUncertaintyOnly && !route.escalation) return route;
-  if(!advisor.available()) return {...route,rationale:[...route.rationale,"routing advisor unavailable; kept baseline route"]};
+  if(!advisor.available(cfg)) return {...route,rationale:[...route.rationale,"routing advisor unavailable; kept baseline route"]};
   const candidates=route.scores.map(s=>({executor:s.executor,quality:s.quality,speed:s.speed,precision:s.precision,quotaEfficiency:s.quotaEfficiency,baseline:s.confidence}));
   const prompt=`Act only as a routing judge. Choose the coding product most likely to complete this task correctly with the priority order quality > speed > precision > quota. Do not solve the coding task.\n\nTask: ${task.objective}\nClassification: ${JSON.stringify(c)}\nWorkspace: ${JSON.stringify({languages:ws.languages,fileCount:ws.fileCount,hasTests:ws.hasTests,candidateFiles:ws.candidateFiles.slice(0,8)})}\nCandidates: ${JSON.stringify(candidates)}\n\nReturn ONLY JSON: {"primary":"codex|claude|antigravity","reviewer":"codex|claude|antigravity","confidence":0.0,"rationale":"short"}. The reviewer must differ from primary when possible.`;
   try {

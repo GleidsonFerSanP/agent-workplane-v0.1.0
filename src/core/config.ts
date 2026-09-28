@@ -12,15 +12,18 @@ export const DEFAULT_CONFIG: WorkplaneConfig = {
     timeoutMs: 5000,
     failOpen: true
   },
+  hooks: {
+    mode: "observe",
+    largeFileBytes: 250000,
+    jevAssist: false
+  },
   routing: {
     minConfidence: 0.6,
     historyWeight: 0.35,
-    exploreRate: 0.05,
     advisor: {
       enabled: false,
       onUncertaintyOnly: true,
       executor: "antigravity",
-      model: "gemini-3.8-flash-medium",
       timeoutMs: 60000,
       failOpen: true
     }
