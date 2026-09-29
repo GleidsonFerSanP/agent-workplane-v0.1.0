@@ -1,18 +1,21 @@
-# Session & Focus Management
+# Session & Focus Management Workflow
 
-This workflow defines how to use the AI Project Context MCP tools to structure your work and maintain context effectively.
+This document outlines how to use the AI Project Context MCP to manage your workflow state.
 
-## Initialization
-When beginning a task, always establish your coordinates and goals to initialize your context:
-1. `identify_context({ file_path: "./src/index.ts" })` - Remember, ALWAYS use relative paths.
-2. `get_current_focus()` - Check if there's already an active goal or session.
-3. `start_session({ context: "Your high-level goal", current_focus: "Immediate next step" })` - Lock in your intent.
+## Core Session Tools
+Use these tools to ensure you stay aligned with the user's goals and prevent context loss.
 
-## Mid-Session Management
-- **Pivoting**: If the goal changes during the workflow, call `update_focus({ new_focus: "Refactoring the router instead" })`.
-- **Milestones**: After completing a significant sub-task, record the state: `create_checkpoint({ summary: "Added unit tests for routing", next_focus: "Implement CLI command" })`.
-- **Compaction**: If the context window feels large or you've completed ~10 turns, call `refresh_session_context()` to compact your memory.
+| Tool | Usage | Example |
+|------|-------|---------|
+| `identify_context` | Detect project/context from file. | `identify_context({ file_path: "./src/orchestration/runner.ts" })` |
+| `start_session` | Begin focused work session. | `start_session({ context: "runner", current_focus: "Refactoring start logic" })` |
+| `get_current_focus`| Check active state. | `get_current_focus()` |
+| `update_focus` | Change focus when pivoting. | `update_focus({ focus: "Writing tests for runner" })` |
+| `create_checkpoint`| Save milestone progress. | `create_checkpoint({ summary: "Refactored plan fn", next_focus: "test" })` |
+| `complete_session` | Mark session as done. | `complete_session()` |
+| `refresh_session_context` | Reload context if degrading. | `refresh_session_context()` |
 
-## Completion
-When the objective is fully met, close out the workspace:
-- `complete_session()`
+## Best Practices
+- **Relative Paths**: Always use `./src/...` or `./test/...` when identifying context.
+- **Frequent Checkpoints**: Call `create_checkpoint` after every major functional implementation or successful test run.
+- **Focus Alignment**: If the user asks you to switch tasks (e.g., from fixing a bug in `runner.ts` to adding a feature in `cli.ts`), call `update_focus` before starting the new task.

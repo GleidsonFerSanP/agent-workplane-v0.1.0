@@ -7,7 +7,7 @@ export const DEFAULT_CONFIG: WorkplaneConfig = {
   qualityFloor: 0.9,
   jev: {
     enabled: true,
-    endpoint: "https://jevtypesafeai.com/api/v1/decide",
+    endpoint: "https://api.typesafe.ai/v1/decide",
     model: "jev-latest",
     timeoutMs: 5000,
     failOpen: true

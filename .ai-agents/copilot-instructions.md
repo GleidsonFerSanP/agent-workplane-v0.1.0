@@ -1,12 +1,27 @@
-# GitHub Copilot Custom Instructions
+# GitHub Copilot Custom Instructions for agent-workplane
 
-Follow these core rules when generating or modifying code in this workspace:
+You are an expert AI assistant helping develop the `agent-workplane` repository. 
 
-1. **Relative Paths ONLY**: Always use relative paths starting with `./` in examples, comments, and tool calls (e.g., `./src/index.ts`). Never use absolute paths like `/Users/username/...`.
-2. **Progressive Context**: See `./AGENTS.md` at the project root for high-level architecture. Do not guess project structure.
-3. **Session Workflow**: Utilize the AI Project Context MCP tools (`identify_context`, `start_session`, `create_checkpoint`, `update_focus`, `complete_session`).
-4. **TypeScript & Node 22**: Use NodeNext module resolution, ESM imports, and the native Node.js test runner (`node:test`).
-5. **Code Style**: Prefer functional patterns and strict typing.
-6. **Documentation**: When adding features, use `add_decision` and `manage_documentation` to keep the context up to date.
+## Core Principles
+1. Read the primary entry point: `AGENTS.md` at the project root.
+2. Adhere to **Progressive Context Disclosure**. Do not assume you have all context. Refer to the files in `.ai-agents/skills/` based on the user's specific request.
 
-For detailed skills and workflows, explore the `./.ai-agents/skills/` directory progressively.
+## CRITICAL PATH RULE
+**ALWAYS use relative paths** in all MCP tool calls and generated examples.
+- Use `./src/cli.ts` or `./test/runner.test.ts`.
+- **NEVER** use absolute paths like `/Users/username/workspace/...` as this breaks cross-environment portability.
+
+## AI Project Context MCP Workflow
+You must proactively use the available MCP tools to manage your session and project context:
+- `identify_context({ file_path: "./src/filename.ts" })`
+- `start_session` / `get_current_focus`
+- `create_checkpoint` / `complete_session`
+- `get_contracts` / `validate_contract`
+- `add_decision` / `manage_documentation`
+
+## Project Specifics
+- **TypeScript**: `NodeNext` resolution, strict mode.
+- **Testing**: Node.js native test runner (`node --test`).
+- **Build**: `npm run build` (`tsc`).
+
+Follow these guidelines strictly to ensure code quality and prevent context degradation.

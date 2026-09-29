@@ -1,14 +1,23 @@
 # Documentation & Decisions Workflow
 
-Documentation is treated as code in this project and is maintained progressively.
+The `agent-workplane` project uses Architectural Decision Records (ADRs) and formal documentation for new features.
 
-## Tools
-- `check_existing_documentation({ topic: "CLI usage" })` - ALWAYS check before writing new documentation to avoid duplicates.
-- `manage_documentation({ action: "update", file_path: "./docs/cli.md", content: "..." })` - Safely modify documentation. Note the relative path!
-- `add_decision({ title: "Use Node.js 22 built-in test runner", rationale: "Avoids external dependencies like Jest" })` - Record an Architecture Decision Record (ADR) when making structural choices.
-- `get_complete_project_context()` - Use when you need a broad summary of existing features and architecture to inform documentation.
+## MCP Tools for Documentation
+Use the AI Project Context MCP to read and write documentation contextually:
 
-## Rules
-1. **Relative Paths**: Always use relative paths for files (e.g., `./docs/api.md`). Never use absolute paths.
-2. **Synchronous Updates**: Update documentation synchronously with code changes in the same session.
-3. **Capture Intent**: Document *why* a decision was made, not just *what* the code does (use `add_decision`).
+| Tool | Purpose |
+|------|---------|
+| `check_existing_documentation` | Search before creating new docs to avoid duplication. |
+| `manage_documentation` | Create or update documentation files. |
+| `add_decision` | Record architectural decisions (ADRs). |
+| `get_complete_project_context` | Get a full project summary when deeply confused. |
+
+## Workflow for New Features
+1. **Check Existing**:
+   `check_existing_documentation({ query: "agent executors" })`
+2. **Register Feature**:
+   If building something new, use `register_feature({ feature_name: "new_executor", description: "..." })`.
+3. **Record Decisions**:
+   If you make a major architectural choice (e.g., how Jev heuristics are routed), use `add_decision({ decision: "Use naive fallback for Jev", rationale: "..." })`.
+
+*Reminder*: Any file paths provided to these tools MUST be relative (`./docs/adr-01.md`).

@@ -1,5 +1,12 @@
 #!/usr/bin/env node
 import path from "node:path";
+import fs from "node:fs";
+if(fs.existsSync(path.join(process.cwd(), ".env"))){
+  fs.readFileSync(path.join(process.cwd(), ".env"), "utf8").split("\n").forEach(l=>{
+    const m=l.match(/^\s*([\w]+)\s*=\s*(.*)?\s*$/);
+    if(m&&!process.env[m[1]!]) process.env[m[1]!]=m[2]!.replace(/(^['"]|['"]$)/g, "");
+  });
+}
 import { initConfig, loadConfig } from "./core/config.js";
 import { plan, start } from "./orchestration/runner.js";
 import { commandExists } from "./utils/process.js";

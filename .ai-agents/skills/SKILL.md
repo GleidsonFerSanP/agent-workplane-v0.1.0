@@ -1,20 +1,29 @@
-# Agent Skills Hub
+# Core Skills & MCP Workflow
 
-This directory contains progressive disclosure instructions for working on the `agent-workplane` project.
-Rather than loading all documentation into your context window at once, explore these specific files only when their context is required for the task.
+This document serves as the progressive disclosure hub for the AI Project Context MCP tools within the `agent-workplane` repository. 
 
-## Available Workflows
-- **[Session Management](./SESSION-WORKFLOW.md)**: Details on using MCP session tools (`start_session`, `create_checkpoint`, etc.).
-- **[Contracts & Guidelines](./CONTRACT-REFERENCE.md)**: How to validate code boundaries and interfaces.
-- **[Documentation](./DOCUMENTATION-WORKFLOW.md)**: Rules for creating and maintaining project docs.
-- **[Patterns & Features](./PATTERNS-REFERENCE.md)**: Retrieving and registering code patterns.
+## 🗺️ Progressive Context Architecture
+To avoid context rot and token explosion, do not load all guidelines at once. Use the following specialized documents based on your current task:
 
-## Progressive Context Engineering Best Practices
-1. **Search First**: Use tools like `get_features` or `get_complete_project_context` to understand the domain before making assumptions.
-2. **Read Narrowly**: Fetch only the specific documents or files you need.
-3. **Compact State**: Use `refresh_session_context` to avoid context window bloat during long-running tasks.
+- **Managing state & workflow**: Read [SESSION-WORKFLOW.md](./SESSION-WORKFLOW.md)
+- **Writing TypeScript code/tests**: Read [PATTERNS-REFERENCE.md](./PATTERNS-REFERENCE.md)
+- **Modifying core interfaces**: Read [CONTRACT-REFERENCE.md](./CONTRACT-REFERENCE.md)
+- **Writing or updating docs**: Read [DOCUMENTATION-WORKFLOW.md](./DOCUMENTATION-WORKFLOW.md)
 
-## Anti-Patterns
-- 🚫 **Absolute Paths**: Never use `/Users/username/...` in tool calls. Always use relative paths like `./src/...`.
-- 🚫 **Guessing**: Don't assume architecture. Use `identify_context` and `get_contracts` to fetch ground truth.
-- 🚫 **Context Bloat**: Don't try to read the entire `./src` directory at once. Read files selectively.
+## 🛠️ The Standard MCP Workflow
+Whenever you perform work in this project, adhere to this lifecycle using the AI Project Context MCP tools:
+
+1. **Identify**: `identify_context({ file_path: "./src/cli.ts" })`
+   - *CRITICAL*: Always use relative paths starting with `./`.
+2. **Assess**: `get_current_focus()`
+3. **Start**: `start_session({ context, current_focus })` or `get_merged_guidelines({ context })`
+4. **Execute**: Do the coding/writing task. Use tools like `get_features()` or `get_contracts()` as needed.
+5. **Persist**: `create_checkpoint({ summary, next_focus })`
+6. **Refresh**: If the conversation goes beyond 10 turns, use `refresh_session_context()` to combat context decay.
+7. **Complete**: `complete_session()`
+
+## 🛑 Anti-Patterns to Avoid
+- **Absolute Paths**: Using `/Users/...` in MCP tools will break on other developers' machines.
+- **Context Stuffing**: Requesting all documentation resources at once instead of progressively calling specific endpoints.
+- **Missing Checkpoints**: Writing massive amounts of code without calling `create_checkpoint()`.
+- **Ignoring Tests**: Pushing code without ensuring `npm run test` and `npm run check` pass cleanly.

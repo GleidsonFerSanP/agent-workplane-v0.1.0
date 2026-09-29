@@ -1,19 +1,34 @@
-# Code Patterns & Features
+# Project Code Patterns
 
-We use MCP tools to teach and retrieve coding patterns for the `agent-workplane` project, keeping context sizes small by only loading patterns when necessary.
+This document describes the code conventions and patterns for `agent-workplane`.
 
-## Discovering Patterns
-- `get_features()` - Lists all registered features in the project.
-- `get_feature_context({ feature_name: "routing" })` - Fetches the full context, business rules, and patterns for a specific feature.
+## General Conventions
+- **TypeScript Strict Mode**: The project uses strict TS (`NodeNext` module resolution).
+- **ES Modules**: We use `.js` extensions in imports (e.g., `import { loadConfig } from "./core/config.js";`).
+- **No Semicolons / Single Quotes**: Standardize on functional patterns where possible.
 
-## Registering Patterns
-If you implement a new architectural pattern or feature, document it so future AI agents can learn from it:
-- `learn_pattern({ pattern_name: "Routing Strategy", description: "Standard way to route tasks", examples: ["./src/router.ts"] })`
-- `register_feature({ name: "CLI Options", description: "How CLI args are parsed", rules: ["Use built-in node:util parseArgs"] })`
-*(Notice the use of `./src/router.ts` — ALWAYS use relative paths!)*
+## Feature Patterns & MCP Integration
+When you encounter a new pattern that should be reused, or need to learn an existing one, use the AI Project Context MCP:
 
-## Base Project Patterns (Node 22 & TypeScript)
-- Use ESM (`"type": "module"` in `package.json`).
-- Use the native `node:test` runner.
-- Strict TypeScript typings without `any`.
-- Functional patterns preferred over heavy classes.
+| Tool | Purpose |
+|------|---------|
+| `learn_pattern` | Teach the MCP a new code pattern you've identified. |
+| `get_features` | List registered project features. |
+| `get_feature_context` | Get complete context on a specific feature implementation. |
+
+## Example: Native Node Testing
+The project uses the native Node.js test runner.
+Test files are located in `./test/` and run via `node --test dist/test/*.test.js`.
+
+When writing tests:
+```typescript
+import test from "node:test";
+import assert from "node:assert/strict";
+import { plan } from "../src/orchestration/runner.js";
+
+test("runner plan creates correct route", async () => {
+  // test logic
+});
+```
+
+*Always use relative paths like `./src/...` or `./test/...` when calling MCP tools to register or learn patterns!*

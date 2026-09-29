@@ -1,27 +1,32 @@
-# Quick Reference Checklist
+# AI Agent Quick Reference
 
-Use this condensed checklist to ensure compliance with project rules within a minimal token footprint.
+This is a condensed checklist designed to fit efficiently into your context window. Review this before starting work on the `agent-workplane` project.
 
-## The Golden Rule: Relative Paths ONLY
-**ALWAYS USE RELATIVE PATHS.** 
-- ✅ **Correct**: `./src/cli.ts`
-- 🚫 **Wrong**: `/Users/gleidsonfersanp/workspace/agent-workplane-v0.1.0/src/cli.ts`
+## 🚨 CRITICAL PATH RULE
+**ALWAYS use relative paths** starting with `./` in all MCP tool calls and examples.
+- ✅ CORRECT: `identify_context({ file_path: "./src/core/config.ts" })`
+- ❌ WRONG: `identify_context({ file_path: "/Users/username/workspace/agent-workplane-v0.1.0/src/core/config.ts" })`
 
-## Standard MCP Session Workflow
-Every conversation should follow this pattern:
-- [ ] **1. Identify Context**: `identify_context({ file_path: "./src/index.ts" })`
-- [ ] **2. Check Focus**: `get_current_focus()`
-- [ ] **3. Start Session**: `start_session(...)` or `get_merged_guidelines(...)`
-- [ ] **4. Work Iteratively**: Avoid loading all files; use progressive disclosure.
-- [ ] **5. Refresh Context**: `refresh_session_context()` every 10 turns.
-- [ ] **6. Save Milestones**: `create_checkpoint(...)` when finishing a logical step.
-- [ ] **7. End Session**: `complete_session()`
+## 📋 Session Checklist
 
-## Common Project Commands
-- **Build**: `npm run build`
-- **Test**: `npm run test`
-- **Type Check**: `npm run check`
+1. **Initialization**
+   - Call `identify_context({ file_path: "./src/cli.ts" })` to orient yourself.
+   - Call `get_current_focus()` to check the active session.
+   - If starting fresh, call `start_session({ context, current_focus })`.
+   - Call `get_merged_guidelines({ context })` to load active rules.
 
-## References
-Explore detailed capabilities only when needed:
-- [Skills Hub](./skills/SKILL.md)
+2. **Execution**
+   - Use `npm run check` to verify TypeScript typings.
+   - Use `npm run test` to run native Node.js tests.
+   - Update focus using `update_focus({ new_focus })` if the direction changes.
+
+3. **Checkpoints & Completion**
+   - After completing a milestone, call `create_checkpoint({ summary, next_focus })`.
+   - When the task is done, call `complete_session()`.
+
+## 🔗 Deep Dives (Progressive Context)
+If you need more detailed instructions on specific areas, read these files:
+- [Session Management](./skills/SESSION-WORKFLOW.md)
+- [Project Code Patterns](./skills/PATTERNS-REFERENCE.md)
+- [Contracts & Validation](./skills/CONTRACT-REFERENCE.md)
+- [Documentation Standards](./skills/DOCUMENTATION-WORKFLOW.md)
