@@ -1,32 +1,54 @@
-# AI Agent Quick Reference
+# AI Agent Quick Reference - agent-workplane
 
-This is a condensed checklist designed to fit efficiently into your context window. Review this before starting work on the `agent-workplane` project.
+Condensed checklist designed to fit into working memory (<500 tokens). Review this before taking action.
 
-## 🚨 CRITICAL PATH RULE
-**ALWAYS use relative paths** starting with `./` in all MCP tool calls and examples.
-- ✅ CORRECT: `identify_context({ file_path: "./src/core/config.ts" })`
-- ❌ WRONG: `identify_context({ file_path: "/Users/username/workspace/agent-workplane-v0.1.0/src/core/config.ts" })`
+---
 
-## 📋 Session Checklist
+## 🚨 Critical Path Rule
+**ALWAYS use relative paths starting with `./`** in all tool calls:
+- ✅ `identify_context({ file_path: "./src/cli.ts" })`
+- ❌ `identify_context({ file_path: "/Users/.../src/cli.ts" })`
 
-1. **Initialization**
-   - Call `identify_context({ file_path: "./src/cli.ts" })` to orient yourself.
-   - Call `get_current_focus()` to check the active session.
-   - If starting fresh, call `start_session({ context, current_focus })`.
-   - Call `get_merged_guidelines({ context })` to load active rules.
+---
 
-2. **Execution**
-   - Use `npm run check` to verify TypeScript typings.
-   - Use `npm run test` to run native Node.js tests.
-   - Update focus using `update_focus({ new_focus })` if the direction changes.
+## 🔄 Standard Turn Lifecycle
 
-3. **Checkpoints & Completion**
-   - After completing a milestone, call `create_checkpoint({ summary, next_focus })`.
-   - When the task is done, call `complete_session()`.
+1. **Identify Context**:
+   `identify_context({ file_path: "./src/target.ts" })`
+2. **Check Focus**:
+   `get_current_focus()`
+3. **Initialize Session / Guidelines**:
+   `start_session({ context: "agent-workplane", current_focus: "task description" })`
+   OR `get_merged_guidelines({ context: "agent-workplane" })`
+4. **Implement**:
+   - Write code with ESM `.js` import extensions (`./core/types.js`).
+   - Run verification: `npm run check && npm run test`.
+5. **Checkpoint Milestone**:
+   `create_checkpoint({ summary: "what was done", next_focus: "next step" })`
+6. **Refresh (Every 10 Turns)**:
+   `refresh_session_context()`
+7. **Complete Session**:
+   `complete_session()`
 
-## 🔗 Deep Dives (Progressive Context)
-If you need more detailed instructions on specific areas, read these files:
+---
+
+## ⚡ Fast Commands
+
+| Action | Command |
+|---|---|
+| Typecheck | `npm run check` |
+| Native Tests | `npm run test` |
+| Build TS | `npm run build` |
+| Work CLI Doctor | `node ./dist/src/cli.js doctor` |
+
+---
+
+## 🔗 Progressive Context Links
+
+- [Full Guidelines](../AGENTS.md)
+- [Skills Hub](./skills/SKILL.md)
 - [Session Management](./skills/SESSION-WORKFLOW.md)
-- [Project Code Patterns](./skills/PATTERNS-REFERENCE.md)
-- [Contracts & Validation](./skills/CONTRACT-REFERENCE.md)
-- [Documentation Standards](./skills/DOCUMENTATION-WORKFLOW.md)
+- [Contracts & Types](./skills/CONTRACT-REFERENCE.md)
+- [Documentation & ADRs](./skills/DOCUMENTATION-WORKFLOW.md)
+- [Code Patterns](./skills/PATTERNS-REFERENCE.md)
+- [Copilot Instructions](./copilot-instructions.md)
